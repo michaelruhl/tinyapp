@@ -2,6 +2,10 @@ const express = require('express');
 const app = express();
 const PORT = 8080;
 
+///////////////////////////////////////////////////////
+// GENERATE RANDOM 6 DIGITS
+///////////////////////////////////////////////////////
+
 function generateRandomString() {
   result = [];
   for (i = 0; i < 6; i++) {
@@ -36,6 +40,7 @@ app.get('/urls.json', (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
+
   res.render("urls_index", templateVars);
 });
 
@@ -43,22 +48,36 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+///////////////////////////////////////////////////////
+// SUBMIT NEW URL POST
+///////////////////////////////////////////////////////
+
+
 app.post("/urls", (req, res) => {
-  // console.log('req.body', req.body); // Log the POST request body to the console
-  // console.log('longURL', req.body.longURL)
-  
+
   const shortURL = generateRandomString();
-  // console.log('shortURL', shortURL)
- // Object.assign(urlDatabase, tinyBigurl);
   const longURL = req.body.longURL;
-  console.log('urldatabase1', urlDatabase)
-  urlDatabase[shortURL] = longURL;
+   urlDatabase[shortURL] = longURL;
   
-  console.log('urldatabase2', urlDatabase)
-  
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+   res.send("Ok"); 
 });
 
+///////////////////////////////////////////////////////
+// DELETE URL
+///////////////////////////////////////////////////////
+
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id;
+  
+  delete urlDatabase[id];
+
+
+   res.redirect('/urls')
+});
+
+///////////////////////////////////////////////////////
+// PROVIDE URLS_SHOW W VARIABLES
+///////////////////////////////////////////////////////
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
@@ -67,15 +86,19 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello<b>World</b></body></html>\n');
-});
+///////////////////////////////////////////////////////
+// REDIRECT TO LONG URL
+///////////////////////////////////////////////////////
 
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
   res.redirect(longURL);
 });
+
+///////////////////////////////////////////////////////
+// SERVER LISTENING PORT 8080
+///////////////////////////////////////////////////////
 
 app.listen(PORT, () => {
 
