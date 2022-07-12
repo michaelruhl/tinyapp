@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080;
 
 ///////////////////////////////////////////////////////
-// GENERATE RANDOM 6 DIGITS
+// GENERATE RANDOM 6 DIGITS ----v
 ///////////////////////////////////////////////////////
 
 function generateRandomString() {
@@ -44,12 +44,10 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
+
 
 ///////////////////////////////////////////////////////
-// SUBMIT NEW URL POST
+// SUBMIT NEW URL POST----v
 ///////////////////////////////////////////////////////
 
 
@@ -59,11 +57,25 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
    urlDatabase[shortURL] = longURL;
   
-   res.send("Ok"); 
+   res.redirect(`/urls/${shortURL}`)
+});
+
+
+///////////////////////////////////////////////////////
+// UPDATE URL----v
+///////////////////////////////////////////////////////
+
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  const longURL = req.body.updatedURL;
+  urlDatabase[id] = longURL;
+  
+  console.log(id)
+  res.redirect('/urls')
 });
 
 ///////////////////////////////////////////////////////
-// DELETE URL
+// DELETE URL----v
 ///////////////////////////////////////////////////////
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -74,9 +86,8 @@ app.post("/urls/:id/delete", (req, res) => {
 
    res.redirect('/urls')
 });
-
 ///////////////////////////////////////////////////////
-// PROVIDE URLS_SHOW W VARIABLES
+// PROVIDE URLS_SHOW W VARIABLES----v
 ///////////////////////////////////////////////////////
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
@@ -87,7 +98,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 ///////////////////////////////////////////////////////
-// REDIRECT TO LONG URL
+// REDIRECT TO LONG URL----v
 ///////////////////////////////////////////////////////
 
 app.get("/u/:id", (req, res) => {
@@ -97,7 +108,7 @@ app.get("/u/:id", (req, res) => {
 });
 
 ///////////////////////////////////////////////////////
-// SERVER LISTENING PORT 8080
+// SERVER LISTENING PORT 8080----v
 ///////////////////////////////////////////////////////
 
 app.listen(PORT, () => {
