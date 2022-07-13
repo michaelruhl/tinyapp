@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser')
 const app = express();
 const PORT = 8080;
 
@@ -20,6 +21,7 @@ function generateRandomString() {
 
 
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 app.set('view engine', 'ejs');
 
@@ -39,12 +41,41 @@ app.get('/urls.json', (req, res) => {
 
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-
+    
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies['username']
+  };
+  
   res.render("urls_index", templateVars);
 });
 
 
+
+
+
+///////////////////////////////////////////////////////
+// USERNAME LOGIN----v
+///////////////////////////////////////////////////////
+
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  
+  res.cookie('username', username);
+  
+  res.redirect('/urls')
+});
+
+///////////////////////////////////////////////////////
+// USERNAME LOGOUT----v
+///////////////////////////////////////////////////////
+
+app.post("/logout", (req, res) => {
+
+  
+  res.clearCookie('username')
+  res.redirect('/urls')
+});
 
 ///////////////////////////////////////////////////////
 // SUBMIT NEW URL POST----v
@@ -59,8 +90,6 @@ app.post("/urls", (req, res) => {
   
    res.redirect(`/urls/${shortURL}`)
 });
-
-
 ///////////////////////////////////////////////////////
 // UPDATE URL----v
 ///////////////////////////////////////////////////////
@@ -70,7 +99,7 @@ app.post("/urls/:id", (req, res) => {
   const longURL = req.body.updatedURL;
   urlDatabase[id] = longURL;
   
-  console.log(id)
+ 
   res.redirect('/urls')
 });
 
@@ -92,8 +121,14 @@ app.post("/urls/:id/delete", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-
-  const templateVars = { id, longURL };
+  const username = req.body.username;
+  
+  res.cookie('username', username);
+  const templateVars = { 
+    id, 
+    longURL,
+    username
+  };
   res.render("urls_show", templateVars);
 });
 
