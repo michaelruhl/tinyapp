@@ -1,5 +1,4 @@
 const express = require('express');
-// const cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
 const app = express();
@@ -21,18 +20,7 @@ function generateRandomString() {
   return randomString;
 }
 
-// const findUser = function(usersObj, emailObj) {
-
-//   for (let id in users) {
-//     if (email === users[id].email) {
-//       return users[id]['id'];
-//     }
-
-//   }
-// };
-
 app.use(express.urlencoded({ extended: true }));
-// app.use(cookieParser());
 app.use(cookieSession({
 
     name: 'session',
@@ -163,11 +151,6 @@ app.post("/urls", (req, res) => {
     return res.status(401).send('user not logged in');
   }
 
-  // const user = users[user_id];
-  // if (!user) {
-  //   return res.status(401).send('user not valid');
-  // }
-  
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = { longURL, userID: user_id };
@@ -211,14 +194,9 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
-  // console.log(req.body.email)
   const password = req.body.password;
   
-  
-
-  // console.log(users);
-  
-  if (email.length === 0 || password.length === 0) {
+   if (email.length === 0 || password.length === 0) {
     return res.status(400).send('ERROR please provide an email and a password');
   }
 
@@ -241,29 +219,9 @@ app.post("/login", (req, res) => {
 
   const email = req.body.email;
   const password = req.body.password;
-  
-  // const findUser = function(usersObj, emailObj) {
-    
-  //   for (let id in users) {
-  //     if (email === users[id].email) {
-  //       return users[id];
-  //     }
-
-  //   }
-  // };
-  // const findUser = function(usersObj, emailObj) {
-    
-  //   for (let id in users) {
-  //     if (email === users[id].email) {
-  //       return users[id];
-  //     }
-
-  //   }
-  // };
-  
+      
   const user = findUser(users, email);
   if (findUser(users, email)) {
-    // if (password === users[userID].password) {
    if (bcrypt.compareSync(`${password}`, user.hashedPassword))  {
     req.session.user_id = user.id;
       res.redirect('/urls');
@@ -278,15 +236,12 @@ app.post("/login", (req, res) => {
 
 });
 
-
 app.post("/logout", (req, res) => {
 
 
   req.session.user_id = undefined;
   res.redirect('/login');
 });
-
-
 
 app.listen(PORT, () => {
 
