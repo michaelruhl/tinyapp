@@ -1,7 +1,10 @@
 const express = require('express');
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
+var cookieSession = require('cookie-session')
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080;
+const findUser = require('./helpers')
 
 ///////////////////////////////////////////////////////
 // GENERATE RANDOM 6 DIGITS ----v
@@ -29,8 +32,14 @@ function generateRandomString() {
 // };
 
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-const bcrypt = require("bcryptjs");
+// app.use(cookieParser());
+app.use(cookieSession({
+
+    name: 'session',
+    keys: ['qierograndetequilacompadre'],
+    maxAge: 24 * 60 * 60 * 100
+
+}))
 
 app.set('view engine', 'ejs');
 
@@ -52,12 +61,12 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    hashedPassword: bcrypt.hashSync('1234', 12),
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    hashedPassword: bcrypt.hashSync('1234', 12),
   },
 };
 
@@ -71,7 +80,8 @@ app.get('/', (req, res) => {
 // urls page
 app.get("/urls", (req, res) => {
 
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
+  console.log(user_id)
   if (!user_id) {
     return res.status(401).send('user not logged in');
   }
@@ -94,7 +104,7 @@ app.get("/urls", (req, res) => {
 
 //create new urls
 app.get("/urls/new", (req, res) => {
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   if (!user_id) {
     return res.status(401).send('user not logged in');
   }
@@ -110,7 +120,7 @@ app.get("/urls/new", (req, res) => {
 
 // url details page
 app.get("/urls/:id", (req, res) => {
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
   const id = req.params.id;
   const longURL = urlDatabase[id].longURL;
   const user = users[userId];
@@ -124,7 +134,7 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/register", (req, res) => {
   
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   if (user_id) {
     return res.redirect('/urls');
   } else {user = null}
@@ -134,7 +144,7 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
 
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   if (user_id) {
     return res.redirect('/urls');
   }
@@ -148,7 +158,7 @@ app.get("/login", (req, res) => {
 //CREATE URL - POST
 app.post("/urls", (req, res) => {
 
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   if (!user_id) {
     return res.status(401).send('user not logged in');
   }
@@ -223,7 +233,7 @@ app.post("/register", (req, res) => {
 
   users[id] = {id, email, password: hashedPassword}
   console.log(users)
-  res.cookie('user_id', id);
+  req.session.user_id = id;
   res.redirect('/urls');
 });
 
@@ -232,20 +242,30 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   
-  const findUser = function(usersObj, emailObj) {
+  // const findUser = function(usersObj, emailObj) {
     
-    for (let id in users) {
-      if (email === users[id].email) {
-        return users[id]['id'];
-      }
+  //   for (let id in users) {
+  //     if (email === users[id].email) {
+  //       return users[id];
+  //     }
 
-    }
-  };
-  const userID = findUser(users, email);
+  //   }
+  // };
+  // const findUser = function(usersObj, emailObj) {
+    
+  //   for (let id in users) {
+  //     if (email === users[id].email) {
+  //       return users[id];
+  //     }
+
+  //   }
+  // };
+  
+  const user = findUser(users, email);
   if (findUser(users, email)) {
     // if (password === users[userID].password) {
-   if (bcrypt.compareSync(`${password}`, hashedPassword))  {
-    res.cookie('user_id', userID);
+   if (bcrypt.compareSync(`${password}`, user.hashedPassword))  {
+    req.session.user_id = user.id;
       res.redirect('/urls');
     } else {
       res.status(403).send('INCORRECT LOGIN CREDENTIALS');
@@ -262,7 +282,7 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
 
 
-  res.clearCookie('user_id');
+  req.session.user_id = undefined;
   res.redirect('/login');
 });
 
