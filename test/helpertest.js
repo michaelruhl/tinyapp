@@ -1,6 +1,6 @@
 
 const { assert } = require('chai');
-const findUser = require('../helpers.js')
+const { findUser, generateRandomString } = require("../helpers.js");
 
 const testUsers = {
   "userRandomID": {
@@ -27,3 +27,11 @@ describe('findUser', function() {
    assert.equal(undefined, undefined)
   });
 });
+
+describe('generateRandomString', function() {
+  it('should generate 6 random integers', function()  {
+    const randomString = generateRandomString();
+    const assertRandomString = '124356'; 
+    assert.equal(randomString.length, assertRandomString.length)
+  })
+})
